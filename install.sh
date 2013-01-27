@@ -1,10 +1,12 @@
 #!/bin/bash
 
 LAUNCHD_NAME="com.github.pekepeke.devdns"
+# PLIST_PATH="$HOME/Library/LaunchAgents/$LAUNCHD_NAME.plist"
 PLIST_PATH="/Library/LaunchDaemons/$LAUNCHD_NAME.plist"
 PY_NAME=devdns.py
 
-INSTALL_PATH=/usr/local/bin/$PY_NAME
+INSTALL_DIR="$HOME/Library/Application Support/TinyDns"
+INSTALL_PATH="$INSTALL_DIR/$PY_NAME"
 
 opt_uninstall=0
 
@@ -58,28 +60,29 @@ exec_install() {
 
   local PLIST_FNAME=$LAUNCHD_NAME.plist
 
-  [ -e $PLIST_PATH ]
+  [ -e "$PLIST_PATH" ]
   installed=$?
-  launchd_plist $* > $PLIST_FNAME
-  sudo chown root $PLIST_FNAME
-  sudo chgrp wheel $PLIST_FNAME
-  sudo cp -irp $(dirname $0)/$PY_NAME $INSTALL_PATH
-  sudo cp -irp $PLIST_FNAME $PLIST_PATH
+  # sudo chown root $PLIST_FNAME
+  # sudo chgrp wheel $PLIST_FNAME
+  [ ! -e "$INSTALL_DIR" ] && mkdir "$INSTALL_DIR"
+  cp -irp "$(dirname $0)/$PY_NAME" "$INSTALL_PATH"
 
-  sudo rm $PLIST_FNAME
+  launchd_plist $* | sudo tee $PLIST_PATH >/dev/null
+
   echo load daemons...
-  [ $installed -eq 0 ] && sudo launchctl unload $PLIST_PATH
-  sudo launchctl load $PLIST_PATH
-  # sudo launchctl start $LAUNCHD_NAME
+  [ $installed -eq 0 ] && launchctl unload "$PLIST_PATH"
+  sudo launchctl load -Fw "$PLIST_PATH"
+  sudo launchctl start $LAUNCHD_NAME
 
   echo "Installation is complete."
 }
 
 exec_uninstall() {
   echo stop daemons...
-  sudo launchctl unload $PLIST_PATH
-  sudo rm $INSTALL_PATH
-  sudo rm $PLIST_PATH
+  sudo launchctl unload "$PLIST_PATH"
+  sudo rm "$PLIST_PATH"
+  rm "$INSTALL_PATH"
+  rmdir "$INSTALL_DIR"
 
   echo "Uninstallation is complete."
 }

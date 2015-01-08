@@ -5,7 +5,7 @@ LAUNCHD_NAME="com.github.pekepeke.devdns"
 PLIST_PATH="/Library/LaunchDaemons/$LAUNCHD_NAME.plist"
 PY_NAME=devdns.py
 
-INSTALL_DIR="$HOME/Library/Application Support/TinyDns"
+INSTALL_DIR="$HOME/Library/Application Support/DevDns"
 INSTALL_PATH="$INSTALL_DIR/$PY_NAME"
 
 opt_uninstall=0
